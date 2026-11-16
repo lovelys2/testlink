@@ -7,120 +7,196 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    #qrcode img, #qrcode canvas { margin: 0 auto; border-radius: 8px; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+    }
+    #qrcode img, #qrcode canvas {
+      margin: 0 auto;
+      border-radius: 10px;
+      display: block;
+    }
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="text-slate-800 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
   <!-- Header -->
-  <header class="bg-white border-b border-slate-200/80 sticky top-0 z-10">
-    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/70 sticky top-0 z-20">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
           </svg>
         </div>
-        <span class="font-bold text-lg tracking-tight text-slate-900">LinkShort</span>
+        <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+          PanLink
+        </span>
+      </a>
+
+      <div class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50/90 text-emerald-700 border border-emerald-200/80 shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>DevPan</span>
       </div>
-      <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-        Supabase + Cloudflare
-      </span>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8 sm:py-12 space-y-8">
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
     
     <!-- Hero & Form Card -->
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-8">
-      <div class="mb-6">
-        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Rút gọn liên kết nhanh chóng</h1>
-        <p class="text-slate-500 text-sm sm:text-base mt-1">Tạo đường dẫn ngắn gọn, dễ nhớ kèm mã QR và theo dõi lượt truy cập thực tế.</p>
+    <section class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/80 p-6 sm:p-9 relative overflow-hidden">
+      <div class="mb-7">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          Rút gọn liên kết
+        </h1>
+        <p class="text-slate-500 text-sm sm:text-base mt-1.5 leading-relaxed">
+          Biến đường dẫn dài thành liên kết ngắn gọn, tạo mã QR sắc nét và theo dõi lượt truy cập theo thời gian thực.
+        </p>
       </div>
 
-      <form id="shortenForm" class="space-y-4">
+      <form id="shortenForm" class="space-y-5">
+        <!-- Input URL -->
         <div>
-          <label for="urlInput" class="block text-sm font-medium text-slate-700 mb-1.5">Đường dẫn gốc (URL)</label>
-          <input type="text" id="urlInput" required placeholder="https://example.com/duong-dan-bai-viet-rat-dai..."
-            class="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
-        </div>
-
-        <div>
-          <label for="aliasInput" class="block text-sm font-medium text-slate-700 mb-1.5">
-            Bí danh tùy chỉnh <span class="text-slate-400 font-normal">(để trống để tạo ngẫu nhiên)</span>
+          <label for="urlInput" class="block text-sm font-semibold text-slate-700 mb-2">
+            Đường dẫn gốc (URL)
           </label>
-          <div class="flex items-center rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition bg-white">
-            <span id="domainPrefix" class="bg-slate-100 px-3.5 py-3 text-sm text-slate-500 font-medium border-r border-slate-200 select-none"></span>
-            <input type="text" id="aliasInput" placeholder="vd: khuyen-mai-2026"
-              class="w-full px-3.5 py-3 text-slate-900 placeholder-slate-400 focus:outline-none" />
+          <div class="relative flex items-center">
+            <div class="absolute left-3.5 text-slate-400 pointer-events-none">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <input type="text" id="urlInput" required placeholder="https://devpan.vercel.app/duong-dan-bai-viet-rat-dai..."
+              class="w-full pl-11 pr-20 py-3.5 rounded-2xl border border-slate-300/90 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition text-sm sm:text-base" />
+            <button type="button" id="pasteBtn"
+              class="absolute right-2.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded-xl transition">
+              Dán link
+            </button>
           </div>
         </div>
 
+        <!-- Input Alias -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label for="aliasInput" class="text-sm font-semibold text-slate-700">
+              Bí danh tùy chỉnh
+            </label>
+            <span class="text-xs text-slate-400 font-medium">Tùy chọn (bỏ trống để tạo ngẫu nhiên)</span>
+          </div>
+          <div class="flex items-center rounded-2xl border border-slate-300/90 overflow-hidden focus-within:ring-4 focus-within:ring-blue-500/15 focus-within:border-blue-500 transition bg-white">
+            <span id="domainPrefix" class="bg-slate-50 px-4 py-3.5 text-sm text-slate-500 font-semibold border-r border-slate-200 select-none shrink-0"></span>
+            <input type="text" id="aliasInput" placeholder="vd: yeuem"
+              class="w-full px-3.5 py-3.5 text-slate-900 placeholder-slate-400 focus:outline-none text-sm sm:text-base" />
+          </div>
+        </div>
+
+        <!-- Submit Button -->
         <button type="submit" id="submitBtn"
-          class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 text-white font-semibold py-3.5 px-6 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+          class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] disabled:opacity-60 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2.5 text-sm sm:text-base cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
           <span>Rút gọn liên kết ngay</span>
         </button>
       </form>
 
       <!-- Error Alert -->
-      <div id="errorBox" class="hidden mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5">
+      <div id="errorBox" class="hidden animate-fade-in mt-5 p-4 rounded-2xl bg-red-50 border border-red-200/80 text-red-700 text-sm flex items-start gap-3">
         <svg class="w-5 h-5 shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span id="errorText"></span>
+        <span id="errorText" class="font-medium"></span>
       </div>
 
       <!-- Result Box -->
-      <div id="resultBox" class="hidden mt-6 pt-6 border-t border-slate-100">
-        <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div id="resultBox" class="hidden animate-fade-in mt-7 pt-7 border-t border-slate-100">
+        <div class="bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-50 border border-blue-200/80 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div class="flex-1 min-w-0 w-full text-center sm:text-left">
-            <span class="inline-block text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-md mb-2">
-              Đã tạo thành công
-            </span>
-            <div class="flex items-center justify-center sm:justify-start gap-2">
-              <a id="shortLinkAnchor" href="#" target="_blank" class="text-lg sm:text-xl font-bold text-blue-600 hover:underline truncate"></a>
+            <div class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-2.5 py-1 rounded-lg mb-3">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Sẵn sàng chia sẻ</span>
             </div>
-            <p id="originalUrlPreview" class="text-xs text-slate-500 truncate mt-1"></p>
 
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
+            <div class="flex items-center justify-center sm:justify-start gap-2">
+              <a id="shortLinkAnchor" href="#" target="_blank" class="text-xl sm:text-2xl font-extrabold text-blue-600 hover:text-blue-700 hover:underline truncate"></a>
+            </div>
+            <p id="originalUrlPreview" class="text-xs sm:text-sm text-slate-500 truncate mt-1.5"></p>
+
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-5">
               <button type="button" id="copyResultBtn"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow-sm">
-                Sao chép link
+                class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm shadow-blue-600/20 inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Sao chép link</span>
               </button>
               <button type="button" id="downloadQrBtn"
-                class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-sm font-medium px-4 py-2 rounded-lg transition">
-                Tải mã QR
+                class="bg-white hover:bg-slate-50 active:scale-95 text-slate-700 border border-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-2xs inline-flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>Tải mã QR</span>
               </button>
             </div>
           </div>
 
-          <div class="shrink-0 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+          <div class="shrink-0 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col items-center">
             <div id="qrcode"></div>
+            <span class="text-[11px] font-medium text-slate-400 mt-2">Quét để mở nhanh</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- History Section -->
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-8">
-      <div class="flex items-center justify-between mb-5">
+    <section class="bg-white rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-200/80 p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 class="text-lg font-bold text-slate-900">Liên kết đã tạo trên trình duyệt này</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Số lượt click được đồng bộ trực tiếp từ Supabase</p>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Liên kết của bạn đã tạo </h2>
+            <span id="historyCount" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">0</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Tổng số lượt click được đồng bộ trực tiếp chỉ hiển thị mỗi máy bạn</p>
         </div>
-        <div class="flex items-center gap-2">
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
           <button type="button" id="refreshStatsBtn"
-            class="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
-            Làm mới click
+            class="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-xl transition inline-flex items-center gap-1.5">
+            <svg id="refreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Làm mới click</span>
           </button>
           <button type="button" id="clearHistoryBtn"
-            class="text-xs font-medium text-slate-500 hover:text-red-600 px-2.5 py-1.5 rounded-lg transition">
+            class="text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-xl transition">
             Xóa lịch sử
           </button>
+        </div>
+      </div>
+
+      <!-- Search Filter (hiển thị khi có từ 2 link trở lên) -->
+      <div id="searchWrapper" class="hidden mb-4">
+        <div class="relative">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" id="searchInput" placeholder="Tìm nhanh theo bí danh hoặc đường dẫn gốc..."
+            class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
         </div>
       </div>
 
@@ -129,9 +205,15 @@
 
   </main>
 
+  <!-- Footer -->
+  <footer class="py-6 text-center text-xs text-slate-400">
+    PanLink • Rút gọn liên kết nhanh & an toàn
+  </footer>
+
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg opacity-0 pointer-events-none transition-opacity duration-200">
-    Đã sao chép vào bộ nhớ tạm!
+  <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900/95 backdrop-blur-sm text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 opacity-0 translate-y-2 pointer-events-none transition-all duration-200">
+    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="toastText">Đã sao chép vào bộ nhớ tạm!</span>
   </div>
 
   <script>
@@ -150,15 +232,23 @@
     const originalUrlPreview = document.getElementById("originalUrlPreview");
     const qrcodeContainer = document.getElementById("qrcode");
     const historyList = document.getElementById("historyList");
+    const historyCount = document.getElementById("historyCount");
+    const searchWrapper = document.getElementById("searchWrapper");
+    const searchInput = document.getElementById("searchInput");
     const toast = document.getElementById("toast");
+    const toastText = document.getElementById("toastText");
 
     let currentShortUrl = "";
     let currentCode = "";
+    let toastTimer = null;
 
     function showToast(msg) {
-      toast.textContent = msg;
-      toast.classList.remove("opacity-0");
-      setTimeout(() => toast.classList.add("opacity-0"), 2000);
+      toastText.textContent = msg;
+      toast.classList.remove("opacity-0", "translate-y-2");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-2");
+      }, 2200);
     }
 
     function getHistory() {
@@ -173,12 +263,22 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     }
 
+    function formatDate(isoString) {
+      if (!isoString) return "";
+      try {
+        const d = new Date(isoString);
+        return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+      } catch {
+        return "";
+      }
+    }
+
     function renderQRCode(text) {
       qrcodeContainer.innerHTML = "";
       new QRCode(qrcodeContainer, {
         text: text,
-        width: 120,
-        height: 120,
+        width: 124,
+        height: 124,
         colorDark: "#0f172a",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
@@ -186,40 +286,81 @@
     }
 
     function renderHistory() {
-      const items = getHistory();
+      const allItems = getHistory();
+      const keyword = (searchInput.value || "").trim().toLowerCase();
+
+      historyCount.textContent = allItems.length;
+      if (allItems.length >= 2) {
+        searchWrapper.classList.remove("hidden");
+      } else {
+        searchWrapper.classList.add("hidden");
+      }
+
+      const items = keyword
+        ? allItems.filter(i => i.shortUrl.toLowerCase().includes(keyword) || i.originalUrl.toLowerCase().includes(keyword))
+        : allItems;
+
+      if (allItems.length === 0) {
+        historyList.innerHTML = `
+          <div class="text-center py-12 px-4 border-2 border-dashed border-slate-200/80 rounded-2xl bg-slate-50/40">
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+            </div>
+            <p class="text-slate-600 font-semibold text-sm">Chưa có liên kết nào được lưu</p>
+            <p class="text-slate-400 text-xs mt-1">Hãy dán đường dẫn ở khung phía trên để tạo link rút gọn đầu tiên!</p>
+          </div>`;
+        return;
+      }
+
       if (items.length === 0) {
         historyList.innerHTML = `
-          <div class="text-center py-8 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl">
-            Chưa có liên kết nào được tạo. Hãy rút gọn đường dẫn đầu tiên ở phía trên!
+          <div class="text-center py-8 text-slate-400 text-sm">
+            Không tìm thấy liên kết nào khớp với từ khóa "<span class="font-semibold text-slate-600">${keyword}</span>"
           </div>`;
         return;
       }
 
       historyList.innerHTML = items.map((item) => `
-        <div class="p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition">
+        <div class="group p-4 rounded-2xl border border-slate-200/80 hover:border-blue-300/80 bg-white hover:bg-blue-50/20 shadow-2xs hover:shadow-md hover:shadow-slate-200/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <a href="${item.shortUrl}" target="_blank" class="font-semibold text-blue-600 hover:underline truncate">
+            <div class="flex flex-wrap items-center gap-2">
+              <a href="${item.shortUrl}" target="_blank" class="font-bold text-blue-600 hover:text-blue-700 hover:underline truncate text-sm sm:text-base">
                 ${item.shortUrl}
               </a>
-              <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-200/70 text-slate-700">
+              <span class="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
                 ${item.clicks ?? 0} clicks
               </span>
+              ${item.createdAt ? `<span class="text-[11px] text-slate-400">• ${formatDate(item.createdAt)}</span>` : ""}
             </div>
-            <p class="text-xs text-slate-500 truncate mt-1">${item.originalUrl}</p>
+            <p class="text-xs text-slate-500 truncate mt-1.5" title="${item.originalUrl}">${item.originalUrl}</p>
           </div>
-          <div class="flex items-center gap-2 shrink-0">
+
+          <div class="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
             <button type="button" onclick="copyText('${item.shortUrl}')"
-              class="text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg transition">
-              Sao chép
+              class="flex-1 sm:flex-initial text-xs font-semibold bg-slate-100 hover:bg-blue-600 text-slate-700 hover:text-white px-3 py-2 rounded-xl transition inline-flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>Sao chép</span>
             </button>
             <button type="button" onclick="showItemQR('${item.shortUrl}', '${item.code}', '${encodeURIComponent(item.originalUrl)}')"
-              class="text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg transition">
-              Mã QR
+              class="flex-1 sm:flex-initial text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-xl transition inline-flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              <span>Mã QR</span>
             </button>
             <button type="button" onclick="removeItem('${item.code}')"
-              class="text-xs font-medium text-slate-400 hover:text-red-600 px-2 py-1.5 rounded-lg transition" title="Xóa khỏi lịch sử">
-              ✕
+              class="text-xs font-medium text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition" title="Xóa khỏi lịch sử">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
             </button>
           </div>
         </div>
@@ -246,11 +387,15 @@
       const updated = getHistory().filter((item) => item.code !== code);
       saveHistory(updated);
       renderHistory();
+      showToast("Đã xóa liên kết khỏi lịch sử");
     };
 
     async function syncClicksFromSupabase() {
       const items = getHistory();
       if (items.length === 0) return;
+
+      const refreshIcon = document.getElementById("refreshIcon");
+      if (refreshIcon) refreshIcon.classList.add("animate-spin");
 
       try {
         const codes = items.map((i) => i.code);
@@ -270,14 +415,38 @@
         }
       } catch (e) {
         console.error("Không thể đồng bộ lượt click:", e);
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove("animate-spin");
       }
     }
+
+    // Nút dán nhanh từ clipboard
+    document.getElementById("pasteBtn").addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          urlInput.value = text.trim();
+          urlInput.focus();
+          showToast("Đã dán đường dẫn từ bộ nhớ tạm");
+        }
+      } catch {
+        urlInput.focus();
+        showToast("Trình duyệt chặn tự động dán, hãy nhấn Ctrl+V");
+      }
+    });
+
+    searchInput.addEventListener("input", renderHistory);
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorBox.classList.add("hidden");
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span>Đang xử lý...</span>`;
+      submitBtn.innerHTML = `
+        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span>Đang tạo liên kết...</span>`;
 
       try {
         const res = await fetch("/api/shorten", {
@@ -310,7 +479,7 @@
           shortUrl: data.shortUrl,
           originalUrl: data.originalUrl,
           clicks: 0,
-          createdAt: data.createdAt
+          createdAt: data.createdAt || new Date().toISOString()
         });
         saveHistory(history);
         renderHistory();
@@ -322,7 +491,11 @@
         errorBox.classList.remove("hidden");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<span>Rút gọn liên kết ngay</span>`;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>Rút gọn liên kết ngay</span>`;
       }
     });
 
@@ -348,9 +521,12 @@
     });
 
     document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+      if (getHistory().length === 0) return;
       if (confirm("Xóa danh sách lịch sử hiển thị trên trình duyệt này? (Link trên Supabase vẫn hoạt động bình thường)")) {
         localStorage.removeItem(STORAGE_KEY);
+        searchInput.value = "";
         renderHistory();
+        showToast("Đã xóa toàn bộ lịch sử trình duyệt");
       }
     });
 
