@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkShort - Rút gọn liên kết & Tạo mã QR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    #qrcode img, #qrcode canvas { margin: 0 auto; border-radius: 8px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200/80 sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+        </div>
+        <span class="font-bold text-lg tracking-tight text-slate-900">LinkShort</span>
+      </div>
+      <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        Supabase + Cloudflare
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8 sm:py-12 space-y-8">
+    
+    <!-- Hero & Form Card -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-8">
+      <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Rút gọn liên kết nhanh chóng</h1>
+        <p class="text-slate-500 text-sm sm:text-base mt-1">Tạo đường dẫn ngắn gọn, dễ nhớ kèm mã QR và theo dõi lượt truy cập thực tế.</p>
+      </div>
+
+      <form id="shortenForm" class="space-y-4">
+        <div>
+          <label for="urlInput" class="block text-sm font-medium text-slate-700 mb-1.5">Đường dẫn gốc (URL)</label>
+          <input type="text" id="urlInput" required placeholder="https://example.com/duong-dan-bai-viet-rat-dai..."
+            class="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" />
+        </div>
+
+        <div>
+          <label for="aliasInput" class="block text-sm font-medium text-slate-700 mb-1.5">
+            Bí danh tùy chỉnh <span class="text-slate-400 font-normal">(để trống để tạo ngẫu nhiên)</span>
+          </label>
+          <div class="flex items-center rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition bg-white">
+            <span id="domainPrefix" class="bg-slate-100 px-3.5 py-3 text-sm text-slate-500 font-medium border-r border-slate-200 select-none"></span>
+            <input type="text" id="aliasInput" placeholder="vd: khuyen-mai-2026"
+              class="w-full px-3.5 py-3 text-slate-900 placeholder-slate-400 focus:outline-none" />
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn"
+          class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 text-white font-semibold py-3.5 px-6 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+          <span>Rút gọn liên kết ngay</span>
+        </button>
+      </form>
+
+      <!-- Error Alert -->
+      <div id="errorBox" class="hidden mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5">
+        <svg class="w-5 h-5 shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span id="errorText"></span>
+      </div>
+
+      <!-- Result Box -->
+      <div id="resultBox" class="hidden mt-6 pt-6 border-t border-slate-100">
+        <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div class="flex-1 min-w-0 w-full text-center sm:text-left">
+            <span class="inline-block text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-md mb-2">
+              Đã tạo thành công
+            </span>
+            <div class="flex items-center justify-center sm:justify-start gap-2">
+              <a id="shortLinkAnchor" href="#" target="_blank" class="text-lg sm:text-xl font-bold text-blue-600 hover:underline truncate"></a>
+            </div>
+            <p id="originalUrlPreview" class="text-xs text-slate-500 truncate mt-1"></p>
+
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-4">
+              <button type="button" id="copyResultBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow-sm">
+                Sao chép link
+              </button>
+              <button type="button" id="downloadQrBtn"
+                class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-sm font-medium px-4 py-2 rounded-lg transition">
+                Tải mã QR
+              </button>
+            </div>
+          </div>
+
+          <div class="shrink-0 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+            <div id="qrcode"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- History Section -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 sm:p-8">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">Liên kết đã tạo trên trình duyệt này</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Số lượt click được đồng bộ trực tiếp từ Supabase</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="refreshStatsBtn"
+            class="text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+            Làm mới click
+          </button>
+          <button type="button" id="clearHistoryBtn"
+            class="text-xs font-medium text-slate-500 hover:text-red-600 px-2.5 py-1.5 rounded-lg transition">
+            Xóa lịch sử
+          </button>
+        </div>
+      </div>
+
+      <div id="historyList" class="space-y-3"></div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg opacity-0 pointer-events-none transition-opacity duration-200">
+    Đã sao chép vào bộ nhớ tạm!
+  </div>
+
+  <script>
+    const STORAGE_KEY = "linkshort_supabase_history_v1";
+    const domainPrefix = document.getElementById("domainPrefix");
+    domainPrefix.textContent = window.location.host + "/";
+
+    const form = document.getElementById("shortenForm");
+    const urlInput = document.getElementById("urlInput");
+    const aliasInput = document.getElementById("aliasInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const errorBox = document.getElementById("errorBox");
+    const errorText = document.getElementById("errorText");
+    const resultBox = document.getElementById("resultBox");
+    const shortLinkAnchor = document.getElementById("shortLinkAnchor");
+    const originalUrlPreview = document.getElementById("originalUrlPreview");
+    const qrcodeContainer = document.getElementById("qrcode");
+    const historyList = document.getElementById("historyList");
+    const toast = document.getElementById("toast");
+
+    let currentShortUrl = "";
+    let currentCode = "";
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.remove("opacity-0");
+      setTimeout(() => toast.classList.add("opacity-0"), 2000);
+    }
+
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistory(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function renderQRCode(text) {
+      qrcodeContainer.innerHTML = "";
+      new QRCode(qrcodeContainer, {
+        text: text,
+        width: 120,
+        height: 120,
+        colorDark: "#0f172a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function renderHistory() {
+      const items = getHistory();
+      if (items.length === 0) {
+        historyList.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl">
+            Chưa có liên kết nào được tạo. Hãy rút gọn đường dẫn đầu tiên ở phía trên!
+          </div>`;
+        return;
+      }
+
+      historyList.innerHTML = items.map((item) => `
+        <div class="p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <a href="${item.shortUrl}" target="_blank" class="font-semibold text-blue-600 hover:underline truncate">
+                ${item.shortUrl}
+              </a>
+              <span class="shrink-0 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-200/70 text-slate-700">
+                ${item.clicks ?? 0} clicks
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 truncate mt-1">${item.originalUrl}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="copyText('${item.shortUrl}')"
+              class="text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg transition">
+              Sao chép
+            </button>
+            <button type="button" onclick="showItemQR('${item.shortUrl}', '${item.code}', '${encodeURIComponent(item.originalUrl)}')"
+              class="text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg transition">
+              Mã QR
+            </button>
+            <button type="button" onclick="removeItem('${item.code}')"
+              class="text-xs font-medium text-slate-400 hover:text-red-600 px-2 py-1.5 rounded-lg transition" title="Xóa khỏi lịch sử">
+              ✕
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    window.copyText = (text) => {
+      navigator.clipboard.writeText(text);
+      showToast("Đã sao chép: " + text);
+    };
+
+    window.showItemQR = (shortUrl, code, encodedOriginal) => {
+      currentShortUrl = shortUrl;
+      currentCode = code;
+      shortLinkAnchor.href = shortUrl;
+      shortLinkAnchor.textContent = shortUrl;
+      originalUrlPreview.textContent = decodeURIComponent(encodedOriginal);
+      renderQRCode(shortUrl);
+      resultBox.classList.remove("hidden");
+      resultBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+
+    window.removeItem = (code) => {
+      const updated = getHistory().filter((item) => item.code !== code);
+      saveHistory(updated);
+      renderHistory();
+    };
+
+    async function syncClicksFromSupabase() {
+      const items = getHistory();
+      if (items.length === 0) return;
+
+      try {
+        const codes = items.map((i) => i.code);
+        const res = await fetch("/api/stats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codes })
+        });
+        const data = await res.json();
+        if (data && data.stats) {
+          const updated = items.map((item) => ({
+            ...item,
+            clicks: data.stats[item.code] !== undefined ? data.stats[item.code] : item.clicks
+          }));
+          saveHistory(updated);
+          renderHistory();
+        }
+      } catch (e) {
+        console.error("Không thể đồng bộ lượt click:", e);
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorBox.classList.add("hidden");
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span>Đang xử lý...</span>`;
+
+      try {
+        const res = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: urlInput.value,
+            customCode: aliasInput.value
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Không thể tạo liên kết rút gọn.");
+        }
+
+        currentShortUrl = data.shortUrl;
+        currentCode = data.code;
+
+        shortLinkAnchor.href = data.shortUrl;
+        shortLinkAnchor.textContent = data.shortUrl;
+        originalUrlPreview.textContent = data.originalUrl;
+        renderQRCode(data.shortUrl);
+        resultBox.classList.remove("hidden");
+
+        // Lưu vào lịch sử trình duyệt
+        const history = getHistory().filter((i) => i.code !== data.code);
+        history.unshift({
+          code: data.code,
+          shortUrl: data.shortUrl,
+          originalUrl: data.originalUrl,
+          clicks: 0,
+          createdAt: data.createdAt
+        });
+        saveHistory(history);
+        renderHistory();
+
+        urlInput.value = "";
+        aliasInput.value = "";
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorBox.classList.remove("hidden");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>Rút gọn liên kết ngay</span>`;
+      }
+    });
+
+    document.getElementById("copyResultBtn").addEventListener("click", () => {
+      if (currentShortUrl) window.copyText(currentShortUrl);
+    });
+
+    document.getElementById("downloadQrBtn").addEventListener("click", () => {
+      const img = qrcodeContainer.querySelector("img");
+      const canvas = qrcodeContainer.querySelector("canvas");
+      const dataUrl = img ? img.src : canvas ? canvas.toDataURL("image/png") : null;
+      if (!dataUrl) return;
+
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `qr-${currentCode || "link"}.png`;
+      a.click();
+    });
+
+    document.getElementById("refreshStatsBtn").addEventListener("click", async () => {
+      await syncClicksFromSupabase();
+      showToast("Đã cập nhật số lượt click mới nhất!");
+    });
+
+    document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+      if (confirm("Xóa danh sách lịch sử hiển thị trên trình duyệt này? (Link trên Supabase vẫn hoạt động bình thường)")) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+      }
+    });
+
+    // Khởi tạo giao diện và đồng bộ lượt click khi tải trang
+    renderHistory();
+    syncClicksFromSupabase();
+  </script>
+</body>
+</html>
