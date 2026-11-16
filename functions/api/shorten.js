@@ -2,7 +2,7 @@ export async function onRequestPost({ request, env }) {
   try {
     if (!env.SUPABASE_URL || !env.SUPABASE_KEY) {
       return Response.json(
-        { error: "Chưa cấu hình biến môi trường SUPABASE_URL hoặc SUPABASE_KEY trên Cloudflare." },
+        { error: "Chưa cấu hình biến môi trường." },
         { status: 500 }
       );
     }
@@ -23,7 +23,7 @@ export async function onRequestPost({ request, env }) {
         throw new Error("Invalid domain");
       }
     } catch {
-      return Response.json({ error: "Định dạng URL không hợp lệ (ví dụ: https://example.com)." }, { status: 400 });
+      return Response.json({ error: "Định dạng URL không hợp lệ (ví dụ: https://devpan.vercel.app)." }, { status: 400 });
     }
 
     // 2. Xử lý bí danh (tùy chỉnh hoặc ngẫu nhiên)
@@ -37,7 +37,7 @@ export async function onRequestPost({ request, env }) {
       }
       const reserved = ["api", "index", "admin", "login", "assets", "static"];
       if (reserved.includes(code.toLowerCase())) {
-        return Response.json({ error: "Bí danh này trùng với đường dẫn hệ thống, vui lòng chọn tên khác." }, { status: 400 });
+        return Response.json({ error: "Bạn không thể chọn tên này, vui lòng chọn tên khác." }, { status: 400 });
       }
     } else {
       const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -59,7 +59,7 @@ export async function onRequestPost({ request, env }) {
     if (!sbRes.ok) {
       const errData = await sbRes.json().catch(() => ({}));
       if (errData.code === "23505") {
-        return Response.json({ error: "Bí danh này đã có người sử dụng, vui lòng chọn tên khác." }, { status: 409 });
+        return Response.json({ error: "Bạn không thể chọn tên này, vui lòng chọn tên khác." }, { status: 409 });
       }
       return Response.json({ error: errData.message || "Lỗi kết nối cơ sở dữ liệu." }, { status: 500 });
     }
